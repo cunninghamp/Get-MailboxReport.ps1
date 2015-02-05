@@ -57,9 +57,20 @@ on ex2010-mb1, and uses the custom file name of ex2010-mb1.csv
 http://exchangeserverpro.com/powershell-script-create-mailbox-size-report-exchange-server-2010
 
 .NOTES
-Written By: Paul Cunningham
-Website:	http://exchangeserverpro.com
-Twitter:	http://twitter.com/exchservpro
+Written by: Paul Cunningham
+
+Find me on:
+
+* My Blog:	http://paulcunningham.me
+* Twitter:	https://twitter.com/paulcunningham
+* LinkedIn:	http://au.linkedin.com/in/cunninghamp/
+* Github:	https://github.com/cunninghamp
+
+For more Exchange Server tips, tricks and news
+check out Exchange Server Pro.
+
+* Website:	http://exchangeserverpro.com
+* Twitter:	http://twitter.com/exchservpro
 
 Additional Credits:
 Chris Brown, http://www.flamingkeys.com
