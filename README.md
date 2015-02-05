@@ -52,11 +52,14 @@ http://exchangeserverpro.com/powershell-script-create-mailbox-size-report-exchan
 
 ## Credits
 Written By: Paul Cunningham
+
 Website:	http://exchangeserverpro.com
+
 Twitter:	http://twitter.com/exchservpro
 
-Additional Credits:
+## Additional Credits
 Chris Brown, http://www.flamingkeys.com
+
 Boe Prox, http://learn-powershell.net/
 
 ## Change Log
