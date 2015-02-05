@@ -47,6 +47,7 @@ Generates a report with the mailbox statisitcs for all mailbox users on ex2010-m
 Generates a report with the mailbox statisitcs for all mailbox users on ex2010-mb1, and uses the custom file name of ex2010-mb1.csv
 
 ## More Information
+A detailed explanation of this script and a demonstration video are available at:
 http://exchangeserverpro.com/powershell-script-create-mailbox-size-report-exchange-server-2010
 
 ## Credits
