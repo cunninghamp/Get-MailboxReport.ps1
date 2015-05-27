@@ -81,46 +81,109 @@ V1.00, 2/2/2012 - Initial version
 V1.01, 27/2/2012 - Improved recipient scope settings, exception handling, and custom file name parameter.
 V1.02, 16/10/2012 - Reordered report fields, added OU, primary SMTP, some specific folder stats,
                     archive mailbox info, and updated to show DAG name for databases when applicable.
+V1.03, 27/05/2014 - Modified behavior of Server parameter
+                - Added UseDatabaseQuotaDefaults, AuditEnabled, HiddenFromAddressListsEnabled, IssueWarningQuota, ProhibitSendQuota, ProhibitSendReceiveQuota
+                - Added email functionality
+                - Added auto-loading of snapin for simpler command lines in Task Scheduler
 
 #>
 
 #requires -version 2
 
 param(
-	[Parameter(ParameterSetName='database')] [string]$database,
-	[Parameter(ParameterSetName='file')] [string]$file,
-	[Parameter(ParameterSetName='server')] [string]$server,
-	[Parameter(ParameterSetName='mailbox')] [string]$mailbox,
-	[Parameter(ParameterSetName='all')] [switch]$all,
-	[string]$filename
+	[Parameter(ParameterSetName='database')]
+    [string]$Database,
+
+	[Parameter(ParameterSetName='file')]
+    [string]$File,
+
+	[Parameter(ParameterSetName='server')]
+    [string]$Server,
+
+	[Parameter(ParameterSetName='mailbox')]
+    [string]$Mailbox,
+
+	[Parameter(ParameterSetName='all')]
+    [switch]$All,
+
+    [Parameter( Mandatory=$false)]	
+    [string]$Filename,
+
+    [Parameter( Mandatory=$false)]
+	[switch]$SendEmail,
+
+	[Parameter( Mandatory=$false)]
+	[string]$MailFrom,
+
+	[Parameter( Mandatory=$false)]
+	[string]$MailTo,
+
+	[Parameter( Mandatory=$false)]
+	[string]$MailServer,
+
+    [Parameter( Mandatory=$false)]
+    [int]$Top = 10
+
 )
 
 #...................................
 # Variables
 #...................................
 
+$now = Get-Date
+
 $ErrorActionPreference = "SilentlyContinue"
 $WarningPreference = "SilentlyContinue"
+
+$reportemailsubject = "Exchange Mailbox Size Report - $date"
+$myDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 $report = @()
+
+
+#...................................
+# Email Settings
+#...................................
+
+$smtpsettings = @{
+	To =  $MailTo
+	From = $MailFrom
+    Subject = $reportemailsubject
+	SmtpServer = $MailServer
+	}
 
 
 #...................................
 # Initialize
 #...................................
 
-#Set recipient scope
-$2007snapin = Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin
+#Try Exchange 2007 snapin first
+
+$2007snapin = Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -Registered
 if ($2007snapin)
 {
+    if (!(Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -ErrorAction SilentlyContinue))
+    {
+		Add-PSSnapin Microsoft.Exchange.Management.PowerShell.Admin
+	}
+
 	$AdminSessionADSettings.ViewEntireForest = 1
 }
 else
 {
-	$2010snapin = Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.E2010
-	if ($2010snapin)
-	{
-		Set-ADServerSettings -ViewEntireForest $true
-	}
+    #Add Exchange 2010 snapin if not already loaded in the PowerShell session
+    if (Test-Path $env:ExchangeInstallPath\bin\RemoteExchange.ps1)
+    {
+	    . $env:ExchangeInstallPath\bin\RemoteExchange.ps1
+	    Connect-ExchangeServer -auto -AllowClobber
+    }
+    else
+    {
+        Write-Warning "Exchange Server management tools are not installed on this computer."
+        EXIT
+    }
+
+    Set-ADServerSettings -ViewEntireForest $true
 }
 
 
@@ -135,7 +198,7 @@ else
 {
 	$timestamp = Get-Date -UFormat %Y%m%d-%H%M
 	$random = -join(48..57+65..90+97..122 | ForEach-Object {[char]$_} | Get-Random -Count 6)
-	$reportfile = "MailboxReport-$timestamp-$random.csv"
+	$reportfile = "$mydir\MailboxReport-$timestamp-$random.csv"
 }
 
 
@@ -144,7 +207,16 @@ else
 #...................................
 
 #Add dependencies
-Import-Module ActiveDirectory
+try
+{
+    Import-Module ActiveDirectory -ErrorAction STOP
+}
+catch
+{
+    Write-Warning $_.Exception.Message
+    Write-Warning "This script requires the Active Directory PowerShell module."
+    EXIT
+}
 
 #Get the mailbox list
 
@@ -152,7 +224,11 @@ Write-Host -ForegroundColor White "Collecting mailbox list"
 
 if($all) { $mailboxes = @(Get-Mailbox -resultsize unlimited -IgnoreDefaultScope) }
 
-if($server) { $mailboxes = @(Get-Mailbox -server $server -resultsize unlimited -IgnoreDefaultScope) }
+if($server)
+{
+    $databases = @(Get-MailboxDatabase -Server $server)
+    $mailboxes = @($databases | Get-Mailbox -resultsize unlimited -IgnoreDefaultScope)
+}
 
 if($database){ $mailboxes = @(Get-Mailbox -database $database -resultsize unlimited -IgnoreDefaultScope) }
 
@@ -196,6 +272,9 @@ foreach ($mb in $mailboxes)
 
 	$user = Get-User $mb
 	$aduser = Get-ADUser $mb.samaccountname -Properties Enabled,AccountExpirationDate
+    
+    $primarydb = $mailboxdatabases | where {$_.Name -eq $mb.Database.Name}
+    $archivedb = $mailboxdatabases | where {$_.Name -eq $mb.ArchiveDatabase.Name}
 
 	#Create a custom PS object to aggregate the data we're interested in
 	
@@ -230,19 +309,35 @@ foreach ($mb in $mailboxes)
 	    $userObj | Add-Member NoteProperty -Name "Archive Items" -Value $archivestats.ItemCount
     }
 
+    $userObj | Add-Member NoteProperty -Name "Audit Enabled" -Value $mb.AuditEnabled
+    $userObj | Add-Member NoteProperty -Name "Email Address Policy Enabled" -Value $mb.EmailAddressPolicyEnabled
+    $userObj | Add-Member NoteProperty -Name "Hidden From Address Lists" -Value $mb.HiddenFromAddressListsEnabled
+    $userObj | Add-Member NoteProperty -Name "Use Database Quota Defaults" -Value $mb.UseDatabaseQuotaDefaults
+    
+    if ($mb.UseDatabaseQuotaDefaults -eq $true)
+    {
+        $userObj | Add-Member NoteProperty -Name "Issue Warning Quota" -Value $primarydb.IssueWarningQuota
+        $userObj | Add-Member NoteProperty -Name "Prohibit Send Quota" -Value $primarydb.ProhibitSendQuota
+        $userObj | Add-Member NoteProperty -Name "Prohibit Send Receive Quota" -Value $primarydb.ProhibitSendReceiveQuota
+    }
+    elseif ($mb.UseDatabaseQuotaDefaults -eq $false)
+    {
+        $userObj | Add-Member NoteProperty -Name "Issue Warning Quota" -Value $mb.IssueWarningQuota
+        $userObj | Add-Member NoteProperty -Name "Prohibit Send Quota" -Value $mb.ProhibitSendQuota
+        $userObj | Add-Member NoteProperty -Name "Prohibit Send Receive Quota" -Value $mb.ProhibitSendReceiveQuota
+    }
+
 	$userObj | Add-Member NoteProperty -Name "Account Enabled" -Value $aduser.Enabled
 	$userObj | Add-Member NoteProperty -Name "Account Expires" -Value $aduser.AccountExpirationDate
 	$userObj | Add-Member NoteProperty -Name "Last Mailbox Logon" -Value $lastlogon
 	$userObj | Add-Member NoteProperty -Name "Last Logon By" -Value $stats.LastLoggedOnUserAccount
     
 
-    $db = $mailboxdatabases | where {$_.Name -eq $mb.Database.Name}
 	$userObj | Add-Member NoteProperty -Name "Primary Mailbox Database" -Value $mb.Database
-	$userObj | Add-Member NoteProperty -Name "Primary Server/DAG" -Value $db.MasterServerOrAvailabilityGroup
+	$userObj | Add-Member NoteProperty -Name "Primary Server/DAG" -Value $primarydb.MasterServerOrAvailabilityGroup
 
-    $db = $mailboxdatabases | where {$_.Name -eq $mb.ArchiveDatabase.Name}
 	$userObj | Add-Member NoteProperty -Name "Archive Mailbox Database" -Value $mb.ArchiveDatabase
-	$userObj | Add-Member NoteProperty -Name "Archive Server/DAG" -Value $db.MasterServerOrAvailabilityGroup
+	$userObj | Add-Member NoteProperty -Name "Archive Server/DAG" -Value $archivedb.MasterServerOrAvailabilityGroup
 
     $userObj | Add-Member NoteProperty -Name "Primary Email Address" -Value $mb.PrimarySMTPAddress
     $userObj | Add-Member NoteProperty -Name "Organizational Unit" -Value $user.OrganizationalUnit
@@ -268,8 +363,55 @@ else
 	}
 	else
 	{
-		$report | Export-Csv -Path $reportfile -NoTypeInformation
+		$report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding UTF8
 		Write-Host -ForegroundColor White "Report written to $reportfile in current path."
 		Get-Item $reportfile
 	}
+}
+
+
+if ($SendEmail)
+{
+
+    $topmailboxeshtml = $report | Sort "Total Mailbox Size (Mb)" -Desc | Select -First $top | Select DisplayName,Title,Department,Office,"Total Mailbox Size (Mb)" | ConvertTo-Html -Fragment
+
+    $reporthtml = $report | ConvertTo-Html -Fragment
+
+	$htmlhead="<html>
+				<style>
+				BODY{font-family: Arial; font-size: 8pt;}
+				H1{font-size: 22px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+				H2{font-size: 18px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+				H3{font-size: 16px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+				TABLE{border: 1px solid black; border-collapse: collapse; font-size: 8pt;}
+				TH{border: 1px solid #969595; background: #dddddd; padding: 5px; color: #000000;}
+				TD{border: 1px solid #969595; padding: 5px; }
+				td.pass{background: #B7EB83;}
+				td.warn{background: #FFF275;}
+				td.fail{background: #FF2626; color: #ffffff;}
+				td.info{background: #85D4FF;}
+				</style>
+				<body>
+                <h1 align=""center"">Exchange Server Mailbox Report</h1>
+                <h3 align=""center"">Generated: $now</h3>
+                <p>Report of Exchange mailboxes. Top $top mailboxes are listed below. Full list of mailboxes is in the CSV file attached to this email.</p>"
+    
+    $spacer = "<br />"
+
+	$htmltail = "</body></html>"
+
+	$htmlreport = $htmlhead + $topmailboxeshtml + $htmltail
+
+	try
+    {
+        Write-Host "Sending email report..."
+        Send-MailMessage @smtpsettings -Body $htmlreport -BodyAsHtml -Encoding ([System.Text.Encoding]::UTF8) -Attachments $reportfile -ErrorAction STOP
+        Write-Host "Finished."
+    }
+    catch
+    {
+        Write-Warning "An SMTP error has occurred, refer to log file for more details."
+        $_.Exception.Message | Out-File "$myDir\get-mailboxreport-error.log"
+        EXIT
+    }
 }
