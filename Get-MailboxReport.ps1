@@ -80,10 +80,11 @@ V1.00, 2/2/2012 - Initial version
 V1.01, 27/2/2012 - Improved recipient scope settings, exception handling, and custom file name parameter.
 V1.02, 16/10/2012 - Reordered report fields, added OU, primary SMTP, some specific folder stats,
                     archive mailbox info, and updated to show DAG name for databases when applicable.
-V1.03, 27/05/2014 - Modified behavior of Server parameter
+V1.03, 27/05/2015 - Modified behavior of Server parameter
                 - Added UseDatabaseQuotaDefaults, AuditEnabled, HiddenFromAddressListsEnabled, IssueWarningQuota, ProhibitSendQuota, ProhibitSendReceiveQuota
                 - Added email functionality
                 - Added auto-loading of snapin for simpler command lines in Task Scheduler
+V1.04, 31/05/2015 - Fixed bug reported by some Exchange 2010 users
 
 #>
 
