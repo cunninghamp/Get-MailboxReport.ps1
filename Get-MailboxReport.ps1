@@ -207,16 +207,8 @@ else
 #...................................
 
 #Add dependencies
-try
-{
-    Import-Module ActiveDirectory -ErrorAction STOP
-}
-catch
-{
-    Write-Warning $_.Exception.Message
-    Write-Warning "This script requires the Active Directory PowerShell module."
-    EXIT
-}
+Import-Module ActiveDirectory -ErrorAction STOP
+
 
 #Get the mailbox list
 
