@@ -85,6 +85,7 @@ V1.03, 27/05/2015 - Modified behavior of Server parameter
                 - Added email functionality
                 - Added auto-loading of snapin for simpler command lines in Task Scheduler
 V1.04, 31/05/2015 - Fixed bug reported by some Exchange 2010 users
+V1.05, 10/06/2015 - Fixed bug with date in email subject line
 
 #>
 
@@ -135,7 +136,7 @@ $now = Get-Date
 $ErrorActionPreference = "SilentlyContinue"
 $WarningPreference = "SilentlyContinue"
 
-$reportemailsubject = "Exchange Mailbox Size Report - $date"
+$reportemailsubject = "Exchange Mailbox Size Report - $now"
 $myDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 $report = @()
