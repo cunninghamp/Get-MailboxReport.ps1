@@ -42,6 +42,9 @@ The SMTP address to send the email to.
 
 -MailServer The SMTP server to send the email through.
 
+.PARAMETER Encoding
+Encoding of output file. String is passed to Export-Csv -Encoding parameter so it takes whatever argument that cmdlet takes.
+
 .EXAMPLE
 .\Get-MailboxReport.ps1 -Database DB01
 Returns a report with the mailbox statistics for all mailbox users in
@@ -147,7 +150,10 @@ param(
 	[string]$MailServer,
 
     [Parameter( Mandatory=$false)]
-    [int]$Top = 10
+    [int]$Top = 10,
+
+  [Parameter( Mandatory=$false)]
+  [string]$Encoding = "UTF8"
 
 )
 
@@ -380,7 +386,7 @@ else
 	}
 	else
 	{
-		$report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding UTF8
+		$report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding $Encoding
 		Write-Host -ForegroundColor White "Report written to $reportfile in current path."
 		Get-Item $reportfile
 	}
