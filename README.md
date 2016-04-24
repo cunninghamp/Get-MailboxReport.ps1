@@ -91,3 +91,4 @@ Wojciech Sciesinski, https://www.linkedin.com/in/sciesinskiwojciech
 - V1.04, 31/05/2015 - Fixed bug reported by some Exchange 2010 users
 - V1.05, 10/06/2015 - Fixed bug with date in email subject line
 - V1.06, 24/04/2106 - Additional fields added: ExchangeGuid,ArchiveGuid. Corrected connecting to Exchange PowerShell if the script running from ordinary PowerShell. Displaying progress bar disabled by default to increase speed. Additional parameters CSVEncoding, CSVDelimiter added to improve a CSV file exporting. Help updated and reformatted
+- V1.07, 24/04/2016 - removed unused variables: reporthtml, spacer. Code reformatted
