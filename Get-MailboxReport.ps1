@@ -185,7 +185,9 @@ $WarningPreference = "SilentlyContinue"
 $reportemailsubject = "Exchange Mailbox Size Report - $now"
 $myDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$report = @()
+# declaring variable in this way should increase code execution speed
+# https://foxdeploy.com/2016/03/23/coding-for-speed/ - credits for Stephen Owen
+$report = new-object System.Collections.ArrayList
 
 
 #...................................
@@ -393,8 +395,8 @@ foreach ($mb in $mailboxes)
     $userObj | Add-Member NoteProperty -Name "Organizational Unit" -Value $user.OrganizationalUnit
 
     
-    #Add the object to the report
-    $report = $report += $userObj
+    #Add the object to the report variable
+    $report.Add($userObj) | Out-Null
 }
 
 #Catch zero item results
@@ -458,6 +460,7 @@ if ($SendEmail)
     {
         Write-Warning "An SMTP error has occurred, refer to log file for more details."
         $_.Exception.Message | Out-File "$myDir\get-mailboxreport-error.log"
-        EXIT
+        
+		Exit
     }
 }
