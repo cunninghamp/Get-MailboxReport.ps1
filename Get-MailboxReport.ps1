@@ -158,7 +158,7 @@ param(
     [string]$MailServer,
 
     [Parameter( Mandatory=$false)]
-    [int]$Top = 10
+    [int]$Top = 10,
 	
     [Parameter(Mandatory = $false)]
     [alias("Encoding")]    
@@ -166,7 +166,10 @@ param(
 	
     [Parameter(Mandatory = $false)]
     [alias("Delimiter")]
-    [string]$CSVDelimiter = ","
+    [string]$CSVDelimiter = ",",
+	
+    [Parameter(Mandatory = $false)]
+    [Switch]$DisplayProgressBar
 
 )
 
@@ -285,9 +288,15 @@ $mailboxdatabases = @(Get-MailboxDatabase)
 #Loop through mailbox list and collect the mailbox statistics
 foreach ($mb in $mailboxes)
 {
-    $i = $i + 1
-    $pct = $i/$mailboxcount * 100
-    Write-Progress -Activity "Collecting mailbox details" -Status "Processing mailbox $i of $mailboxcount - $mb" -PercentComplete $pct
+     If ($DisplayProgressBar.IsPresent) {
+        
+        $i++
+
+        $pct = $i/$mailboxcount * 100
+        
+        Write-Progress -Activity "Collecting mailbox details" -Status "Processing mailbox $i of $mailboxcount - $mb" -PercentComplete $pct
+        
+    }
 
     $stats = $mb | Get-MailboxStatistics | Select-Object TotalItemSize,TotalDeletedItemSize,ItemCount,LastLogonTime,LastLoggedOnUserAccount
     
