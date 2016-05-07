@@ -298,20 +298,20 @@ foreach ($mb in $mailboxes)
         
     }
 
-    $stats = $mb | Get-MailboxStatistics | Select-Object TotalItemSize,TotalDeletedItemSize,ItemCount,LastLogonTime,LastLoggedOnUserAccount
+    $stats = $mb | Get-MailboxStatistics | Select-Object -Property TotalItemSize,TotalDeletedItemSize,ItemCount,LastLogonTime,LastLoggedOnUserAccount
     
     if ($mb.ArchiveDatabase)
     {
-        $archivestats = $mb | Get-MailboxStatistics -Archive | Select-Object TotalItemSize,TotalDeletedItemSize,ItemCount
+        $archivestats = $mb | Get-MailboxStatistics -Archive | Select-Object -Property TotalItemSize,TotalDeletedItemSize,ItemCount
     }
     else
     {
         $archivestats = "n/a"
     }
 
-    $inboxstats = Get-MailboxFolderStatistics $mb -FolderScope Inbox | Where {$_.FolderPath -eq "/Inbox"}
-    $sentitemsstats = Get-MailboxFolderStatistics $mb -FolderScope SentItems | Where {$_.FolderPath -eq "/Sent Items"}
-    $deleteditemsstats = Get-MailboxFolderStatistics $mb -FolderScope DeletedItems | Where {$_.FolderPath -eq "/Deleted Items"}
+    $inboxstats = Get-MailboxFolderStatistics $mb -FolderScope Inbox | Where-Object -FilterScript {$_.FolderPath -eq "/Inbox"}
+    $sentitemsstats = Get-MailboxFolderStatistics $mb -FolderScope SentItems | Where-Object -FilterScript {$_.FolderPath -eq "/Sent Items"}
+    $deleteditemsstats = Get-MailboxFolderStatistics $mb -FolderScope DeletedItems | Where-Object -FilterScript {$_.FolderPath -eq "/Deleted Items"}
     #FolderandSubFolderSize.ToMB()
 
     $lastlogon = $stats.LastLogonTime
@@ -319,8 +319,8 @@ foreach ($mb in $mailboxes)
     $user = Get-User $mb
     $aduser = Get-ADUser $mb.samaccountname -Properties Enabled,AccountExpirationDate
     
-    $primarydb = $mailboxdatabases | where {$_.Name -eq $mb.Database.Name}
-    $archivedb = $mailboxdatabases | where {$_.Name -eq $mb.ArchiveDatabase.Name}
+    $primarydb = $mailboxdatabases | Where-Object -FilterScript {$_.Name -eq $mb.Database.Name}
+    $archivedb = $mailboxdatabases | Where-Object -FilterScript {$_.Name -eq $mb.ArchiveDatabase.Name}
 
     #Create a custom PS object to aggregate the data we're interested in
     
@@ -419,9 +419,7 @@ else
 if ($SendEmail)
 {
 
-    $topmailboxeshtml = $report | Sort "Total Mailbox Size (Mb)" -Desc | Select -First $top | Select DisplayName,Title,Department,Office,"Total Mailbox Size (Mb)" | ConvertTo-Html -Fragment
-
-    $reporthtml = $report | ConvertTo-Html -Fragment
+    $topmailboxeshtml = $report | Sort-Object -Property "Total Mailbox Size (Mb)" -Descending | Select-Object -First $top | Select-Object -Property DisplayName,Title,Department,Office,"Total Mailbox Size (Mb)" | ConvertTo-Html -Fragment
 
     $htmlhead="<html>
                 <style>
@@ -442,8 +440,6 @@ if ($SendEmail)
                 <h3 align=""center"">Generated: $now</h3>
                 <p>Report of Exchange mailboxes. Top $top mailboxes are listed below. Full list of mailboxes is in the CSV file attached to this email.</p>"
     
-    $spacer = "<br />"
-
     $htmltail = "</body></html>"
 
     $htmlreport = $htmlhead + $topmailboxeshtml + $htmltail
