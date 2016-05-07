@@ -60,16 +60,16 @@ Written by: Paul Cunningham
 
 Find me on:
 
-* My Blog:	http://paulcunningham.me
-* Twitter:	https://twitter.com/paulcunningham
-* LinkedIn:	http://au.linkedin.com/in/cunninghamp/
-* Github:	https://github.com/cunninghamp
+* My Blog:  http://paulcunningham.me
+* Twitter:  https://twitter.com/paulcunningham
+* LinkedIn: http://au.linkedin.com/in/cunninghamp/
+* Github:   https://github.com/cunninghamp
 
 For more Exchange Server tips, tricks and news
 check out Exchange Server Pro.
 
-* Website:	http://exchangeserverpro.com
-* Twitter:	http://twitter.com/exchservpro
+* Website:  http://exchangeserverpro.com
+* Twitter:  http://twitter.com/exchservpro
 
 Additional Credits:
 Chris Brown, http://www.flamingkeys.com
@@ -116,35 +116,35 @@ V1.05, 10/06/2015 - Fixed bug with date in email subject line
 #requires -version 2
 
 param(
-	[Parameter(ParameterSetName='database')]
+    [Parameter(ParameterSetName='database')]
     [string]$Database,
 
-	[Parameter(ParameterSetName='file')]
+    [Parameter(ParameterSetName='file')]
     [string]$File,
 
-	[Parameter(ParameterSetName='server')]
+    [Parameter(ParameterSetName='server')]
     [string]$Server,
 
-	[Parameter(ParameterSetName='mailbox')]
+    [Parameter(ParameterSetName='mailbox')]
     [string]$Mailbox,
 
-	[Parameter(ParameterSetName='all')]
+    [Parameter(ParameterSetName='all')]
     [switch]$All,
 
-    [Parameter( Mandatory=$false)]	
+    [Parameter( Mandatory=$false)]  
     [string]$Filename,
 
     [Parameter( Mandatory=$false)]
-	[switch]$SendEmail,
+    [switch]$SendEmail,
 
-	[Parameter( Mandatory=$false)]
-	[string]$MailFrom,
+    [Parameter( Mandatory=$false)]
+    [string]$MailFrom,
 
-	[Parameter( Mandatory=$false)]
-	[string]$MailTo,
+    [Parameter( Mandatory=$false)]
+    [string]$MailTo,
 
-	[Parameter( Mandatory=$false)]
-	[string]$MailServer,
+    [Parameter( Mandatory=$false)]
+    [string]$MailServer,
 
     [Parameter( Mandatory=$false)]
     [int]$Top = 10
@@ -171,11 +171,11 @@ $report = @()
 #...................................
 
 $smtpsettings = @{
-	To =  $MailTo
-	From = $MailFrom
+    To =  $MailTo
+    From = $MailFrom
     Subject = $reportemailsubject
-	SmtpServer = $MailServer
-	}
+    SmtpServer = $MailServer
+    }
 
 
 #...................................
@@ -189,18 +189,18 @@ if ($2007snapin)
 {
     if (!(Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -ErrorAction SilentlyContinue))
     {
-		Add-PSSnapin Microsoft.Exchange.Management.PowerShell.Admin
-	}
+        Add-PSSnapin Microsoft.Exchange.Management.PowerShell.Admin
+    }
 
-	$AdminSessionADSettings.ViewEntireForest = 1
+    $AdminSessionADSettings.ViewEntireForest = 1
 }
 else
 {
     #Add Exchange 2010 snapin if not already loaded in the PowerShell session
     if (Test-Path $env:ExchangeInstallPath\bin\RemoteExchange.ps1)
     {
-	    . $env:ExchangeInstallPath\bin\RemoteExchange.ps1
-	    Connect-ExchangeServer -auto -AllowClobber
+        . $env:ExchangeInstallPath\bin\RemoteExchange.ps1
+        Connect-ExchangeServer -auto -AllowClobber
     }
     else
     {
@@ -217,13 +217,13 @@ else
 
 if ($filename)
 {
-	$reportfile = $filename
+    $reportfile = $filename
 }
 else
 {
-	$timestamp = Get-Date -UFormat %Y%m%d-%H%M
-	$random = -join(48..57+65..90+97..122 | ForEach-Object {[char]$_} | Get-Random -Count 6)
-	$reportfile = "$mydir\MailboxReport-$timestamp-$random.csv"
+    $timestamp = Get-Date -UFormat %Y%m%d-%H%M
+    $random = -join(48..57+65..90+97..122 | ForEach-Object {[char]$_} | Get-Random -Count 6)
+    $reportfile = "$mydir\MailboxReport-$timestamp-$random.csv"
 }
 
 
@@ -249,7 +249,7 @@ if($server)
 
 if($database){ $mailboxes = @(Get-Mailbox -database $database -resultsize unlimited -IgnoreDefaultScope) }
 
-if($file) {	$mailboxes = @(Get-Content $file | Get-Mailbox -resultsize unlimited) }
+if($file) { $mailboxes = @(Get-Content $file | Get-Mailbox -resultsize unlimited) }
 
 if($mailbox) { $mailboxes = @(Get-Mailbox $mailbox) }
 
@@ -265,11 +265,11 @@ $mailboxdatabases = @(Get-MailboxDatabase)
 #Loop through mailbox list and collect the mailbox statistics
 foreach ($mb in $mailboxes)
 {
-	$i = $i + 1
-	$pct = $i/$mailboxcount * 100
-	Write-Progress -Activity "Collecting mailbox details" -Status "Processing mailbox $i of $mailboxcount - $mb" -PercentComplete $pct
+    $i = $i + 1
+    $pct = $i/$mailboxcount * 100
+    Write-Progress -Activity "Collecting mailbox details" -Status "Processing mailbox $i of $mailboxcount - $mb" -PercentComplete $pct
 
-	$stats = $mb | Get-MailboxStatistics | Select-Object TotalItemSize,TotalDeletedItemSize,ItemCount,LastLogonTime,LastLoggedOnUserAccount
+    $stats = $mb | Get-MailboxStatistics | Select-Object TotalItemSize,TotalDeletedItemSize,ItemCount,LastLogonTime,LastLoggedOnUserAccount
     
     if ($mb.ArchiveDatabase)
     {
@@ -285,27 +285,27 @@ foreach ($mb in $mailboxes)
     $deleteditemsstats = Get-MailboxFolderStatistics $mb -FolderScope DeletedItems | Where {$_.FolderPath -eq "/Deleted Items"}
     #FolderandSubFolderSize.ToMB()
 
-	$lastlogon = $stats.LastLogonTime
+    $lastlogon = $stats.LastLogonTime
 
-	$user = Get-User $mb
-	$aduser = Get-ADUser $mb.samaccountname -Properties Enabled,AccountExpirationDate
+    $user = Get-User $mb
+    $aduser = Get-ADUser $mb.samaccountname -Properties Enabled,AccountExpirationDate
     
     $primarydb = $mailboxdatabases | where {$_.Name -eq $mb.Database.Name}
     $archivedb = $mailboxdatabases | where {$_.Name -eq $mb.ArchiveDatabase.Name}
 
-	#Create a custom PS object to aggregate the data we're interested in
-	
-	$userObj = New-Object PSObject
-	$userObj | Add-Member NoteProperty -Name "DisplayName" -Value $mb.DisplayName
-	$userObj | Add-Member NoteProperty -Name "Mailbox Type" -Value $mb.RecipientTypeDetails
-	$userObj | Add-Member NoteProperty -Name "Title" -Value $user.Title
+    #Create a custom PS object to aggregate the data we're interested in
+    
+    $userObj = New-Object PSObject
+    $userObj | Add-Member NoteProperty -Name "DisplayName" -Value $mb.DisplayName
+    $userObj | Add-Member NoteProperty -Name "Mailbox Type" -Value $mb.RecipientTypeDetails
+    $userObj | Add-Member NoteProperty -Name "Title" -Value $user.Title
     $userObj | Add-Member NoteProperty -Name "Department" -Value $user.Department
     $userObj | Add-Member NoteProperty -Name "Office" -Value $user.Office
 
     $userObj | Add-Member NoteProperty -Name "Total Mailbox Size (Mb)" -Value ($stats.TotalItemSize.Value.ToMB() + $stats.TotalDeletedItemSize.Value.ToMB())
-	$userObj | Add-Member NoteProperty -Name "Mailbox Size (Mb)" -Value $stats.TotalItemSize.Value.ToMB()
-	$userObj | Add-Member NoteProperty -Name "Mailbox Recoverable Item Size (Mb)" -Value $stats.TotalDeletedItemSize.Value.ToMB()
-	$userObj | Add-Member NoteProperty -Name "Mailbox Items" -Value $stats.ItemCount
+    $userObj | Add-Member NoteProperty -Name "Mailbox Size (Mb)" -Value $stats.TotalItemSize.Value.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Mailbox Recoverable Item Size (Mb)" -Value $stats.TotalDeletedItemSize.Value.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Mailbox Items" -Value $stats.ItemCount
 
     $userObj | Add-Member NoteProperty -Name "Inbox Folder Size (Mb)" -Value $inboxstats.FolderandSubFolderSize.ToMB()
     $userObj | Add-Member NoteProperty -Name "Sent Items Folder Size (Mb)" -Value $sentitemsstats.FolderandSubFolderSize.ToMB()
@@ -314,16 +314,16 @@ foreach ($mb in $mailboxes)
     if ($archivestats -eq "n/a")
     {
         $userObj | Add-Member NoteProperty -Name "Total Archive Size (Mb)" -Value "n/a"
-	    $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value "n/a"
-	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value "n/a"
-	    $userObj | Add-Member NoteProperty -Name "Archive Items" -Value "n/a"
+        $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value "n/a"
+        $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value "n/a"
+        $userObj | Add-Member NoteProperty -Name "Archive Items" -Value "n/a"
     }
     else
     {
         $userObj | Add-Member NoteProperty -Name "Total Archive Size (Mb)" -Value ($archivestats.TotalItemSize.Value.ToMB() + $archivestats.TotalDeletedItemSize.Value.ToMB())
-	    $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value $archivestats.TotalItemSize.Value.ToMB()
-	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value $archivestats.TotalDeletedItemSize.Value.ToMB()
-	    $userObj | Add-Member NoteProperty -Name "Archive Items" -Value $archivestats.ItemCount
+        $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value $archivestats.TotalItemSize.Value.ToMB()
+        $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value $archivestats.TotalDeletedItemSize.Value.ToMB()
+        $userObj | Add-Member NoteProperty -Name "Archive Items" -Value $archivestats.ItemCount
     }
 
     $userObj | Add-Member NoteProperty -Name "Audit Enabled" -Value $mb.AuditEnabled
@@ -344,24 +344,24 @@ foreach ($mb in $mailboxes)
         $userObj | Add-Member NoteProperty -Name "Prohibit Send Receive Quota" -Value $mb.ProhibitSendReceiveQuota
     }
 
-	$userObj | Add-Member NoteProperty -Name "Account Enabled" -Value $aduser.Enabled
-	$userObj | Add-Member NoteProperty -Name "Account Expires" -Value $aduser.AccountExpirationDate
-	$userObj | Add-Member NoteProperty -Name "Last Mailbox Logon" -Value $lastlogon
-	$userObj | Add-Member NoteProperty -Name "Last Logon By" -Value $stats.LastLoggedOnUserAccount
+    $userObj | Add-Member NoteProperty -Name "Account Enabled" -Value $aduser.Enabled
+    $userObj | Add-Member NoteProperty -Name "Account Expires" -Value $aduser.AccountExpirationDate
+    $userObj | Add-Member NoteProperty -Name "Last Mailbox Logon" -Value $lastlogon
+    $userObj | Add-Member NoteProperty -Name "Last Logon By" -Value $stats.LastLoggedOnUserAccount
     
 
-	$userObj | Add-Member NoteProperty -Name "Primary Mailbox Database" -Value $mb.Database
-	$userObj | Add-Member NoteProperty -Name "Primary Server/DAG" -Value $primarydb.MasterServerOrAvailabilityGroup
+    $userObj | Add-Member NoteProperty -Name "Primary Mailbox Database" -Value $mb.Database
+    $userObj | Add-Member NoteProperty -Name "Primary Server/DAG" -Value $primarydb.MasterServerOrAvailabilityGroup
 
-	$userObj | Add-Member NoteProperty -Name "Archive Mailbox Database" -Value $mb.ArchiveDatabase
-	$userObj | Add-Member NoteProperty -Name "Archive Server/DAG" -Value $archivedb.MasterServerOrAvailabilityGroup
+    $userObj | Add-Member NoteProperty -Name "Archive Mailbox Database" -Value $mb.ArchiveDatabase
+    $userObj | Add-Member NoteProperty -Name "Archive Server/DAG" -Value $archivedb.MasterServerOrAvailabilityGroup
 
     $userObj | Add-Member NoteProperty -Name "Primary Email Address" -Value $mb.PrimarySMTPAddress
     $userObj | Add-Member NoteProperty -Name "Organizational Unit" -Value $user.OrganizationalUnit
 
-	
-	#Add the object to the report
-	$report = $report += $userObj
+    
+    #Add the object to the report
+    $report = $report += $userObj
 }
 
 #Catch zero item results
@@ -369,21 +369,21 @@ $reportcount = $report.count
 
 if ($reportcount -eq 0)
 {
-	Write-Host -ForegroundColor Yellow "No mailboxes were found matching that criteria."
+    Write-Host -ForegroundColor Yellow "No mailboxes were found matching that criteria."
 }
 else
 {
-	#Output single mailbox report to console, otherwise output to CSV file
-	if ($mailbox) 
-	{
-		$report | Format-List
-	}
-	else
-	{
-		$report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding UTF8
-		Write-Host -ForegroundColor White "Report written to $reportfile in current path."
-		Get-Item $reportfile
-	}
+    #Output single mailbox report to console, otherwise output to CSV file
+    if ($mailbox) 
+    {
+        $report | Format-List
+    }
+    else
+    {
+        $report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding UTF8
+        Write-Host -ForegroundColor White "Report written to $reportfile in current path."
+        Get-Item $reportfile
+    }
 }
 
 
@@ -394,32 +394,32 @@ if ($SendEmail)
 
     $reporthtml = $report | ConvertTo-Html -Fragment
 
-	$htmlhead="<html>
-				<style>
-				BODY{font-family: Arial; font-size: 8pt;}
-				H1{font-size: 22px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
-				H2{font-size: 18px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
-				H3{font-size: 16px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
-				TABLE{border: 1px solid black; border-collapse: collapse; font-size: 8pt;}
-				TH{border: 1px solid #969595; background: #dddddd; padding: 5px; color: #000000;}
-				TD{border: 1px solid #969595; padding: 5px; }
-				td.pass{background: #B7EB83;}
-				td.warn{background: #FFF275;}
-				td.fail{background: #FF2626; color: #ffffff;}
-				td.info{background: #85D4FF;}
-				</style>
-				<body>
+    $htmlhead="<html>
+                <style>
+                BODY{font-family: Arial; font-size: 8pt;}
+                H1{font-size: 22px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+                H2{font-size: 18px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+                H3{font-size: 16px; font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;}
+                TABLE{border: 1px solid black; border-collapse: collapse; font-size: 8pt;}
+                TH{border: 1px solid #969595; background: #dddddd; padding: 5px; color: #000000;}
+                TD{border: 1px solid #969595; padding: 5px; }
+                td.pass{background: #B7EB83;}
+                td.warn{background: #FFF275;}
+                td.fail{background: #FF2626; color: #ffffff;}
+                td.info{background: #85D4FF;}
+                </style>
+                <body>
                 <h1 align=""center"">Exchange Server Mailbox Report</h1>
                 <h3 align=""center"">Generated: $now</h3>
                 <p>Report of Exchange mailboxes. Top $top mailboxes are listed below. Full list of mailboxes is in the CSV file attached to this email.</p>"
     
     $spacer = "<br />"
 
-	$htmltail = "</body></html>"
+    $htmltail = "</body></html>"
 
-	$htmlreport = $htmlhead + $topmailboxeshtml + $htmltail
+    $htmlreport = $htmlhead + $topmailboxeshtml + $htmltail
 
-	try
+    try
     {
         Write-Host "Sending email report..."
         Send-MailMessage @smtpsettings -Body $htmlreport -BodyAsHtml -Encoding ([System.Text.Encoding]::UTF8) -Attachments $reportfile -ErrorAction STOP
