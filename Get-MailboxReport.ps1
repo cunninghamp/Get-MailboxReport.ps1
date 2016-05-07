@@ -3,14 +3,11 @@
 Get-MailboxReport.ps1 - Mailbox report generation script.
 
 .DESCRIPTION 
-Generates a report of useful information for
-the specified server, database, mailbox or list of mailboxes.
-Use only one parameter at a time depending on the scope of
-your mailbox report.
+Generates a report of useful information for the specified server, database, mailbox or list of mailboxes.
+Use only one parameter at a time depending on the scope of your mailbox report.
 
 .OUTPUTS
-Single mailbox reports are output to the console, while all other
-reports are output to a CSV file.
+Single mailbox reports are output to the console, while all other reports are output to a CSV file.
 
 .PARAMETER All
 Generates a report for all mailboxes in the organization.
@@ -40,7 +37,20 @@ The SMTP address to send the email from.
 .PARAMETER MailTo
 The SMTP address to send the email to.
 
--MailServer The SMTP server to send the email through.
+.PARAMETER MailServer
+The SMTP server to send the email through.
+
+.PARAMETER Top
+Amount of the biggest mailboxes included in a report send by mail.
+
+.PARAMETER CSVEncoding
+Specifies the encoding for the exported CSV file. Valid values are Unicode, UTF7, UTF8, ASCII, UTF32, BigEndianUnicode, Default, and OEM. The default is ASCII.
+
+.PARAMETER CSVDelimiter
+Specifies a delimiter to separate the property values in the CSV output file. The default is a comma (,). Enter a character, such as a colon (:). To specify a semicolon (;), enclose it in quotation marks.
+
+.PARAMETER DisplayProgressBar
+Set to $true to display progress bar under report generating. Can increase script execution time.
 
 .EXAMPLE
 .\Get-MailboxReport.ps1 -Database DB01
@@ -49,14 +59,13 @@ database HO-MB-01
 
 .EXAMPLE
 .\Get-MailboxReport.ps1 -All -SendEmail -MailFrom exchangereports@exchangeserverpro.net -MailTo alan.reid@exchangeserverpro.net -MailServer smtp.exchangeserverpro.net
-Returns a report with the mailbox statistics for all mailbox users and
-sends an email report to the specified recipient.
+Returns a report with the mailbox statistics for all mailbox users and sends an email report to the specified recipient.
 
 .LINK
 http://exchangeserverpro.com/powershell-script-create-mailbox-size-report-exchange-server-2010
 
 .NOTES
-Written by: Paul Cunningham
+Initially written by Paul Cunningham, updated by community
 
 Find me on:
 
@@ -72,8 +81,10 @@ check out Exchange Server Pro.
 * Twitter:  http://twitter.com/exchservpro
 
 Additional Credits:
-Chris Brown, http://www.flamingkeys.com
-Boe Prox, http://learn-powershell.net/
+Chris Brown, http://www.flamingkeys.com  
+Boe Prox, http://learn-powershell.net/  
+Stefan Midjich, http://stefan.midjich.name  
+Wojciech Sciesinski, https://www.linkedin.com/in/sciesinskiwojciech  
 
 License:
 
@@ -148,6 +159,14 @@ param(
 
     [Parameter( Mandatory=$false)]
     [int]$Top = 10
+	
+    [Parameter(Mandatory = $false)]
+    [alias("Encoding")]    
+	[string]$CSVEncoding = "ASCII",
+	
+    [Parameter(Mandatory = $false)]
+    [alias("Delimiter")]
+    [string]$CSVDelimiter = ","
 
 )
 
@@ -381,7 +400,7 @@ else
     }
     else
     {
-        $report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding UTF8
+        $report | Export-Csv -Path $reportfile -NoTypeInformation -Encoding $CSVEncoding -Delimiter $CSVDelimiter
         Write-Host -ForegroundColor White "Report written to $reportfile in current path."
         Get-Item $reportfile
     }
