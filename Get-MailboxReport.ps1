@@ -276,7 +276,7 @@ if($file) { $mailboxes = @(Get-Content $file | Get-Mailbox -resultsize unlimited
 
 if($mailbox) { $mailboxes = @(Get-Mailbox $mailbox) }
 
-#Get the report
+#Get the report data
 
 Write-Host -ForegroundColor White "Collecting report data"
 
@@ -312,8 +312,7 @@ foreach ($mb in $mailboxes)
     $inboxstats = Get-MailboxFolderStatistics $mb -FolderScope Inbox | Where-Object -FilterScript {$_.FolderPath -eq "/Inbox"}
     $sentitemsstats = Get-MailboxFolderStatistics $mb -FolderScope SentItems | Where-Object -FilterScript {$_.FolderPath -eq "/Sent Items"}
     $deleteditemsstats = Get-MailboxFolderStatistics $mb -FolderScope DeletedItems | Where-Object -FilterScript {$_.FolderPath -eq "/Deleted Items"}
-    #FolderandSubFolderSize.ToMB()
-
+    
     $lastlogon = $stats.LastLogonTime
 
     $user = Get-User $mb
@@ -325,6 +324,11 @@ foreach ($mb in $mailboxes)
     #Create a custom PS object to aggregate the data we're interested in
     
     $userObj = New-Object PSObject
+	
+	$userObj | Add-Member NoteProperty -Name "Mailbox Alias" -value $mb.Alias
+    $userObj | Add-Member NoteProperty -Name "ExchangeGuid" -Value $mb.ExchangeGuid
+    $userObj | Add-Member NoteProperty -Name "ArchiveGuid" -Value $mb.ArchiveGuid
+	
     $userObj | Add-Member NoteProperty -Name "DisplayName" -Value $mb.DisplayName
     $userObj | Add-Member NoteProperty -Name "Mailbox Type" -Value $mb.RecipientTypeDetails
     $userObj | Add-Member NoteProperty -Name "Title" -Value $user.Title
@@ -366,7 +370,7 @@ foreach ($mb in $mailboxes)
         $userObj | Add-Member NoteProperty -Name "Prohibit Send Quota" -Value $primarydb.ProhibitSendQuota
         $userObj | Add-Member NoteProperty -Name "Prohibit Send Receive Quota" -Value $primarydb.ProhibitSendReceiveQuota
     }
-    elseif ($mb.UseDatabaseQuotaDefaults -eq $false)
+    else
     {
         $userObj | Add-Member NoteProperty -Name "Issue Warning Quota" -Value $mb.IssueWarningQuota
         $userObj | Add-Member NoteProperty -Name "Prohibit Send Quota" -Value $mb.ProhibitSendQuota
@@ -380,7 +384,7 @@ foreach ($mb in $mailboxes)
     
 
     $userObj | Add-Member NoteProperty -Name "Primary Mailbox Database" -Value $mb.Database
-    $userObj | Add-Member NoteProperty -Name "Primary Server/DAG" -Value $primarydb.MasterServerOrAvailabilityGroup
+    $userObj | Add-Member NoteProperty -Name "Primary Mailbox Server/DAG" -Value $primarydb.MasterServerOrAvailabilityGroup
 
     $userObj | Add-Member NoteProperty -Name "Archive Mailbox Database" -Value $mb.ArchiveDatabase
     $userObj | Add-Member NoteProperty -Name "Archive Server/DAG" -Value $archivedb.MasterServerOrAvailabilityGroup
