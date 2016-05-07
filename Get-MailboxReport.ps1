@@ -183,32 +183,33 @@ $smtpsettings = @{
 #...................................
 
 #Try Exchange 2007 snapin first
-
 $2007snapin = Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -Registered
-if ($2007snapin)
-{
-    if (!(Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -ErrorAction SilentlyContinue))
-    {
+if ($2007snapin) {
+    if (!(Get-PSSnapin -Name Microsoft.Exchange.Management.PowerShell.Admin -ErrorAction SilentlyContinue)) {
         Add-PSSnapin Microsoft.Exchange.Management.PowerShell.Admin
     }
-
+    
     $AdminSessionADSettings.ViewEntireForest = 1
 }
-else
-{
-    #Add Exchange 2010 snapin if not already loaded in the PowerShell session
-    if (Test-Path $env:ExchangeInstallPath\bin\RemoteExchange.ps1)
-    {
-        . $env:ExchangeInstallPath\bin\RemoteExchange.ps1
-        Connect-ExchangeServer -auto -AllowClobber
+else {
+    #Connect to Exchange 2010 session if not already runned in the EMS
+    if (-not (Test-Path function:Get-Mailbox)) {
+        
+        Try {
+            
+            . $env:ExchangeInstallPath\bin\RemoteExchange.ps1
+            
+            Connect-ExchangeServer -auto -AllowClobber
+            
+        }
+        Catch {
+            
+            Throw "Exchange Server management tools are not installed on this computer."
+            
+        }
+        
+        Set-ADServerSettings -ViewEntireForest $true
     }
-    else
-    {
-        Write-Warning "Exchange Server management tools are not installed on this computer."
-        EXIT
-    }
-
-    Set-ADServerSettings -ViewEntireForest $true
 }
 
 
