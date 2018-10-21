@@ -54,11 +54,16 @@ A detailed explanation of this script and a demonstration video are available at
 http://exchangeserverpro.com/powershell-script-create-mailbox-size-report-exchange-server-2010
 
 ## Credits
-Written By: Paul Cunningham
+Written by: Paul Cunningham
 
-Website:	http://exchangeserverpro.com
+Find me on:
 
-Twitter:	http://twitter.com/exchservpro
+* My Blog:	https://paulcunningham.me
+* Twitter:	https://twitter.com/paulcunningham
+* LinkedIn:	https://au.linkedin.com/in/cunninghamp/
+* Github:	https://github.com/cunninghamp
+
+Check out my [books](https://paulcunningham.me/books/) and [courses](https://paulcunningham.me/training/) to learn more about Office 365 and Exchange Server.
 
 ## Additional Credits
 Chris Brown, http://www.flamingkeys.com
