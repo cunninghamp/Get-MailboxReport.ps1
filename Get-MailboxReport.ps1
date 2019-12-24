@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 Get-MailboxReport.ps1 - Mailbox report generation script.
 
@@ -296,27 +296,27 @@ foreach ($mb in $mailboxes)
     $userObj | Add-Member NoteProperty -Name "Department" -Value $user.Department
     $userObj | Add-Member NoteProperty -Name "Office" -Value $user.Office
 
-    $userObj | Add-Member NoteProperty -Name "Total Mailbox Size (Mb)" -Value ($stats.TotalItemSize.Value.ToMB() + $stats.TotalDeletedItemSize.Value.ToMB())
-	$userObj | Add-Member NoteProperty -Name "Mailbox Size (Mb)" -Value $stats.TotalItemSize.Value.ToMB()
-	$userObj | Add-Member NoteProperty -Name "Mailbox Recoverable Item Size (Mb)" -Value $stats.TotalDeletedItemSize.Value.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Total Mailbox Size (MB)" -Value ($stats.TotalItemSize.Value.ToMB() + $stats.TotalDeletedItemSize.Value.ToMB())
+	$userObj | Add-Member NoteProperty -Name "Mailbox Size (MB)" -Value $stats.TotalItemSize.Value.ToMB()
+	$userObj | Add-Member NoteProperty -Name "Mailbox Recoverable Item Size (MB)" -Value $stats.TotalDeletedItemSize.Value.ToMB()
 	$userObj | Add-Member NoteProperty -Name "Mailbox Items" -Value $stats.ItemCount
 
-    $userObj | Add-Member NoteProperty -Name "Inbox Folder Size (Mb)" -Value $inboxstats.FolderandSubFolderSize.ToMB()
-    $userObj | Add-Member NoteProperty -Name "Sent Items Folder Size (Mb)" -Value $sentitemsstats.FolderandSubFolderSize.ToMB()
-    $userObj | Add-Member NoteProperty -Name "Deleted Items Folder Size (Mb)" -Value $deleteditemsstats.FolderandSubFolderSize.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Inbox Folder Size (MB)" -Value $inboxstats.FolderandSubFolderSize.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Sent Items Folder Size (MB)" -Value $sentitemsstats.FolderandSubFolderSize.ToMB()
+    $userObj | Add-Member NoteProperty -Name "Deleted Items Folder Size (MB)" -Value $deleteditemsstats.FolderandSubFolderSize.ToMB()
 
     if ($archivestats -eq "n/a")
     {
-        $userObj | Add-Member NoteProperty -Name "Total Archive Size (Mb)" -Value "n/a"
-	    $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value "n/a"
-	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value "n/a"
+        $userObj | Add-Member NoteProperty -Name "Total Archive Size (MB)" -Value "n/a"
+	    $userObj | Add-Member NoteProperty -Name "Archive Size (MB)" -Value "n/a"
+	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (MB)" -Value "n/a"
 	    $userObj | Add-Member NoteProperty -Name "Archive Items" -Value "n/a"
     }
     else
     {
-        $userObj | Add-Member NoteProperty -Name "Total Archive Size (Mb)" -Value ($archivestats.TotalItemSize.Value.ToMB() + $archivestats.TotalDeletedItemSize.Value.ToMB())
-	    $userObj | Add-Member NoteProperty -Name "Archive Size (Mb)" -Value $archivestats.TotalItemSize.Value.ToMB()
-	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (Mb)" -Value $archivestats.TotalDeletedItemSize.Value.ToMB()
+        $userObj | Add-Member NoteProperty -Name "Total Archive Size (MB)" -Value ($archivestats.TotalItemSize.Value.ToMB() + $archivestats.TotalDeletedItemSize.Value.ToMB())
+	    $userObj | Add-Member NoteProperty -Name "Archive Size (MB)" -Value $archivestats.TotalItemSize.Value.ToMB()
+	    $userObj | Add-Member NoteProperty -Name "Archive Deleted Item Size (MB)" -Value $archivestats.TotalDeletedItemSize.Value.ToMB()
 	    $userObj | Add-Member NoteProperty -Name "Archive Items" -Value $archivestats.ItemCount
     }
 
@@ -384,7 +384,7 @@ else
 if ($SendEmail)
 {
 
-    $topmailboxeshtml = $report | Sort "Total Mailbox Size (Mb)" -Desc | Select -First $top | Select DisplayName,Title,Department,Office,"Total Mailbox Size (Mb)" | ConvertTo-Html -Fragment
+    $topmailboxeshtml = $report | Sort "Total Mailbox Size (MB)" -Desc | Select -First $top | Select DisplayName,Title,Department,Office,"Total Mailbox Size (MB)" | ConvertTo-Html -Fragment
 
     $reporthtml = $report | ConvertTo-Html -Fragment
 
